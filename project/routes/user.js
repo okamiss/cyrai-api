@@ -25,7 +25,7 @@ router.get('/', (req, res) => {
 // @access  Public
 // 用户注册
 router.post('/', (req, res) => {
-  console.log(req.body, '@@@@@@@@@@@@@@@@@@')
+  console.log(req.body, '@@@@@@@@@@@@@@@')
   const newUser = new User({
     username: req.body.username,
     password: req.body.password,
