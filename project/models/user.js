@@ -23,7 +23,6 @@ const UserSchema = new Schema({
 
 // 在 Schema 中统一定义多个索引
 UserSchema.index({ email: 1 }, { unique: true });
-UserSchema.index({ username: 1 },{ unique: true });
 // UserSchema.index({ age: 1, username: -1 });
 
 module.exports = mongoose.model('User', UserSchema)
