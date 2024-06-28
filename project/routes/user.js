@@ -6,6 +6,15 @@ const User = require('../models/user')
 
 const { successResponse, errorResponse } = require('../utils/responseHandler')
 
+// 在模型初始化时创建索引
+User.on('index', (error) => {
+  if (error) {
+    console.error('User索引创建错误: ', error)
+  } else {
+    console.log('所有User索引创建成功')
+  }
+})
+
 // @route   GET api/users/test
 // @desc    Tests users route
 // @access  Public
@@ -21,11 +30,9 @@ router.get('/', (req, res) => {
 })
 
 // @route   POST api/users
-// @desc    Create user
+// @desc    用户注册
 // @access  Public
-// 用户注册
 router.post('/', (req, res) => {
-  console.log(req.body, '@@@@@@@@@@@@@@@')
   const newUser = new User({
     username: req.body.username,
     password: req.body.password,
@@ -35,7 +42,10 @@ router.post('/', (req, res) => {
   newUser
     .save()
     .then((user) => successResponse(res, user, '注册成功', 200))
-    .catch((err) => errorResponse(res, err.message, 500))
+    .catch((err) => {
+      const { errmsg, code } = err.errorResponse
+      errorResponse(res, errmsg, 500)
+    })
 })
 
 // @route   GET api/users/:id

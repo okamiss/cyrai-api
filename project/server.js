@@ -31,4 +31,4 @@ const userRoutes = require('./routes/user')
 app.use('/api/users', userRoutes)
 
 const port = process.env.PORT || 5000
-app.listen(port, () => console.log(`启动端口 ${port}`))
+app.listen(port, () => console.log(`启动端口：http://localhost:${port}`))
