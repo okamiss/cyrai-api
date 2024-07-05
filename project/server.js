@@ -1,5 +1,5 @@
 const express = require('express')
-const cors = require('cors');
+const cors = require('cors')
 
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
@@ -17,8 +17,7 @@ dotenv.config({ path: envFile })
 
 // Body parser middleware
 app.use(bodyParser.json())
-app.use(cors());
-
+app.use(cors())
 
 // Connect to MongoDB
 mongoose
@@ -28,7 +27,10 @@ mongoose
 
 // 注册路由  user
 const userRoutes = require('./routes/user')
+const articleRoutes = require('./routes/article')
+
 app.use('/api/users', userRoutes)
+app.use('/api/articles', articleRoutes)
 
 const port = process.env.PORT || 5000
 app.listen(port, () => console.log(`启动端口：http://localhost:${port}`))
