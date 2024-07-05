@@ -75,7 +75,7 @@ router.post('/register', (req, res) => {
   User.findOne({ email })
     .then((user) => {
       if (user) {
-        return errorResponse(res, 'Email already exists', 400)
+        return errorResponse(res, '邮箱已被注册', 400)
       } else {
         const newUser = new User({
           username,
