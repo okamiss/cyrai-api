@@ -22,20 +22,35 @@ console.log(req.user);
 
   newArticle
     .save()
-    .then((article) => successResponse(res, article, 'Article created successfully', 201))
+    .then((article) => successResponse(res, article, '发布成功！', 200))
     .catch((err) => errorResponse(res, 'Error creating article', 500))
 })
 
 // @route   GET api/articles
-// @desc    Get all articles
+// @desc    Get all articles with pagination
 // @access  Public
 router.get('/', (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+
   Article.find()
-    .populate('author', 'name') // Populate author field with user name
-    .sort({ createdAt: -1 })
-    .then((articles) => successResponse(res, articles, 'Articles retrieved successfully', 200))
-    .catch((err) => errorResponse(res, 'Error retrieving articles', 500))
-})
+      .populate('author', 'name')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .then(articles => {
+          Article.countDocuments().then(total => {
+              successResponse(res, {
+                  articles,
+                  total,
+                  page,
+                  pages: Math.ceil(total / limit)
+              }, 'Articles retrieved successfully', 200);
+          }).catch(err => errorResponse(res, 'Error counting articles', 500));
+      })
+      .catch(err => errorResponse(res, 'Error retrieving articles', 500));
+});
 
 // @route   GET api/articles/:id
 // @desc    Get a single article by id
