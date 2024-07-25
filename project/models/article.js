@@ -1,47 +1,58 @@
-const mongoose = require('mongoose')
-const Schema = mongoose.Schema
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-// Create schema for Article
 const ArticleSchema = new Schema({
-  title: {
-    type: String,
-    required: true
-  },
-  content: {
-    type: String,
-    required: true
-  },
-  author: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  likes: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'User'
-    }
-  ],
-  comments: [
-    {
-      user: {
-        type: Schema.Types.ObjectId,
-        ref: 'User'
-      },
-      comment: {
+    title: {
         type: String,
         required: true
-      },
-      createdAt: {
+    },
+    content: {
+        type: String,
+        required: true
+    },
+    author: {
+        id: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
+        },
+        name: {
+            type: String,
+            required: true
+        }
+    },
+    createdAt: {
         type: Date,
         default: Date.now
-      }
-    }
-  ]
-})
+    },
+    likes: [{
+        id: {
+            type: Schema.Types.ObjectId,
+            ref: 'User'
+        },
+        name: {
+            type: String
+        }
+    }],
+    comments: [{
+        user: {
+            id: {
+                type: Schema.Types.ObjectId,
+                ref: 'User'
+            },
+            name: {
+                type: String
+            }
+        },
+        comment: {
+            type: String,
+            required: true
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now
+        }
+    }]
+});
 
-module.exports = mongoose.model('Article', ArticleSchema)
+module.exports = mongoose.model('Article', ArticleSchema);

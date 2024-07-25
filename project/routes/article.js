@@ -3,61 +3,75 @@ const router = express.Router()
 const { successResponse, errorResponse } = require('@/utils/responseHandler')
 const authenticateToken = require('@/middleware/authenticateToken')
 
-// Load Article model
 const Article = require('@/models/article')
-// const User = require('../models/user')
+const User = require('@/models/user')
 
-// @route   POST api/articles/add
-// @desc    Create a new article  发布文章帖子
+// @route   POST api/articles
+// @desc    Create a new article
 // @access  Private
 router.post('/add', authenticateToken, (req, res) => {
   const { title, content } = req.body
-  // Create new article
-  const newArticle = new Article({
-    title,
-    content,
-    author: req.user.id
-  })
 
-  newArticle
-    .save()
-    .then((article) => successResponse(res, article, '发布成功！', 200))
-    .catch((err) => errorResponse(res, 'Error creating article', 500))
+  User.findById(req.user.id)
+    .then((user) => {
+      if (!user) {
+        return errorResponse(res, 'User not found', 404)
+      }
+
+      const newArticle = new Article({
+        title,
+        content,
+        author: {
+          id: req.user.id,
+          name: user.username
+        }
+      })
+
+      newArticle
+        .save()
+        .then((article) => successResponse(res, article, 'Article created successfully', 200))
+        .catch((err) => errorResponse(res, 'Error creating article', 500))
+    })
+    .catch((err) => errorResponse(res, 'Error finding user', 500))
 })
 
 // @route   GET api/articles
 // @desc    Get all articles with pagination
 // @access  Public
 router.get('/', (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
-  const skip = (page - 1) * limit;
+  const page = parseInt(req.query.page) || 1
+  const limit = parseInt(req.query.limit) || 10
+  const skip = (page - 1) * limit
 
   Article.find()
-      .populate('author', 'name')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .then(articles => {
-          Article.countDocuments().then(total => {
-              successResponse(res, {
-                  articles,
-                  total,
-                  page,
-                  pages: Math.ceil(total / limit)
-              }, 'Articles retrieved successfully', 200);
-          }).catch(err => errorResponse(res, 'Error counting articles', 500));
-      })
-      .catch(err => errorResponse(res, 'Error retrieving articles', 500));
-});
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .then((articles) => {
+      Article.countDocuments()
+        .then((total) => {
+          successResponse(
+            res,
+            {
+              articles,
+              total,
+              page,
+              pages: Math.ceil(total / limit)
+            },
+            'Articles retrieved successfully',
+            200
+          )
+        })
+        .catch((err) => errorResponse(res, 'Error counting articles', 500))
+    })
+    .catch((err) => errorResponse(res, 'Error retrieving articles', 500))
+})
 
 // @route   GET api/articles/:id
 // @desc    Get a single article by id
 // @access  Public
 router.get('/:id', (req, res) => {
   Article.findById(req.params.id)
-    .populate('author', 'name')
-    .populate('comments.user', 'name') // Populate user name in comments
     .then((article) => {
       if (!article) {
         return errorResponse(res, 'Article not found', 404)
@@ -77,17 +91,23 @@ router.post('/:id/like', authenticateToken, (req, res) => {
         return errorResponse(res, 'Article not found', 404)
       }
 
-      // Check if the user has already liked the article
-      if (article.likes.includes(req.user.id)) {
-        return errorResponse(res, 'Article already liked', 400)
-      }
+      User.findById(req.user.id)
+        .then((user) => {
+          if (!user) {
+            return errorResponse(res, 'User not found', 404)
+          }
 
-      // Add user to likes
-      article.likes.push(req.user.id)
-      article
-        .save()
-        .then(() => successResponse(res, article, 'Article liked successfully', 200))
-        .catch((err) => errorResponse(res, 'Error liking article', 500))
+          if (article.likes.some((like) => like.id.toString() === req.user.id)) {
+            return errorResponse(res, '已经点赞过了', 200)
+          }
+
+          article.likes.push({ id: req.user.id, name: user.username })
+          article
+            .save()
+            .then(() => successResponse(res, article, '点赞成功', 200))
+            .catch((err) => errorResponse(res, 'Error liking article', 500))
+        })
+        .catch((err) => errorResponse(res, 'Error finding user', 500))
     })
     .catch((err) => errorResponse(res, 'Error finding article', 500))
 })
@@ -104,16 +124,25 @@ router.post('/:id/comment', authenticateToken, (req, res) => {
         return errorResponse(res, 'Article not found', 404)
       }
 
-      // Add comment to the article
-      article.comments.push({
-        user: req.user.id,
-        comment
-      })
+      User.findById(req.user.id)
+        .then((user) => {
+          if (!user) {
+            return errorResponse(res, 'User not found', 404)
+          }
+          article.comments.push({
+            user: {
+              id: req.user.id,
+              name: user.username
+            },
+            comment
+          })
 
-      article
-        .save()
-        .then(() => successResponse(res, article, 'Comment added successfully', 200))
-        .catch((err) => errorResponse(res, 'Error adding comment', 500))
+          article
+            .save()
+            .then(() => successResponse(res, article, 'Comment added successfully', 200))
+            .catch((err) => errorResponse(res, 'Error adding comment', 500))
+        })
+        .catch((err) => errorResponse(res, 'Error finding user', 500))
     })
     .catch((err) => errorResponse(res, 'Error finding article', 500))
 })
