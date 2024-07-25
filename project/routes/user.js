@@ -2,12 +2,12 @@ const express = require('express')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const router = express.Router()
-const { successResponse, errorResponse } = require('../utils/responseHandler')
+const { successResponse, errorResponse } = require('@/utils/responseHandler')
 
-const authenticateToken = require('../middleware/authenticateToken')
+const authenticateToken = require('@/middleware/authenticateToken')
 
 // Load User model
-const User = require('../models/user')
+const User = require('@/models/user')
 
 // 在模型初始化时创建索引
 User.on('index', (error) => {

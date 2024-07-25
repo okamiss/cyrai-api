@@ -1,18 +1,17 @@
 const express = require('express')
 const router = express.Router()
-const { successResponse, errorResponse } = require('../utils/responseHandler')
-const authenticateToken = require('../middleware/authenticateToken')
+const { successResponse, errorResponse } = require('@/utils/responseHandler')
+const authenticateToken = require('@/middleware/authenticateToken')
 
 // Load Article model
-const Article = require('../models/article')
-const User = require('../models/user')
+const Article = require('@/models/article')
+// const User = require('../models/user')
 
 // @route   POST api/articles/add
 // @desc    Create a new article  发布文章帖子
 // @access  Private
 router.post('/add', authenticateToken, (req, res) => {
   const { title, content } = req.body
-console.log(req.user);
   // Create new article
   const newArticle = new Article({
     title,
