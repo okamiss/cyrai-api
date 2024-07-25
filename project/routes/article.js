@@ -23,7 +23,7 @@ router.post('/add', authenticateToken, (req, res) => {
         content,
         author: {
           id: req.user.id,
-          name: user.username
+          name: user.name
         }
       })
 
@@ -101,7 +101,7 @@ router.post('/:id/like', authenticateToken, (req, res) => {
             return errorResponse(res, '已经点赞过了', 200)
           }
 
-          article.likes.push({ id: req.user.id, name: user.username })
+          article.likes.push({ id: req.user.id, name: user.name })
           article
             .save()
             .then(() => successResponse(res, article, '点赞成功', 200))
@@ -132,7 +132,7 @@ router.post('/:id/comment', authenticateToken, (req, res) => {
           article.comments.push({
             user: {
               id: req.user.id,
-              name: user.username
+              name: user.name
             },
             comment
           })

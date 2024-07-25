@@ -69,7 +69,7 @@ User.on('index', (error) => {
 // @desc    Register user
 // @access  Public
 router.post('/register', (req, res) => {
-  const { username, email, password } = req.body
+  const { name, email, password } = req.body
 
   // Check if user exists
   User.findOne({ email })
@@ -78,7 +78,7 @@ router.post('/register', (req, res) => {
         return errorResponse(res, '邮箱已被注册', 400)
       } else {
         const newUser = new User({
-          username,
+          name,
           email,
           password
         })
@@ -127,7 +127,7 @@ router.post('/login', (req, res) => {
         .then((isMatch) => {
           if (isMatch) {
             // User matched
-            const payload = { id: user.id, username: user.username }
+            const payload = { id: user.id, name: user.name }
 
             // Sign token
             jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: 3600 }, (err, token) => {
@@ -135,7 +135,7 @@ router.post('/login', (req, res) => {
               successResponse(
                 res,
                 {
-                  username: user.username,
+                  name: user.name,
                   email: user.email,
                   token: token
                 },
@@ -160,7 +160,7 @@ router.get('/current', authenticateToken, (req, res) => {
     res,
     {
       id: req.user.id,
-      username: req.user.username,
+      name: req.user.name,
     },
     'User data retrieved successfully',
     200
