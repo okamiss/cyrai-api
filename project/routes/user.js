@@ -137,6 +137,7 @@ router.post('/login', (req, res) => {
                 {
                   name: user.name,
                   email: user.email,
+                  avatar: user.avatar,
                   token: token
                 },
                 '登录成功',
@@ -153,20 +154,66 @@ router.post('/login', (req, res) => {
 })
 
 // @route   GET api/users/current
-// @desc    Return current user
+// @desc    Get current user
 // @access  Private
 router.get('/current', authenticateToken, (req, res) => {
-  // console.log(req.user);
-  successResponse(
-    res,
-    {
-      id: req.user.id,
-      name: req.user.name,
-      email: req.user.email
-    },
-    'User data retrieved successfully',
-    200
-  )
+  User.findById(req.user.id)
+    .select('-password') // Exclude password field
+    .then((user) => {
+      if (!user) return errorResponse(res, 'User not found', 404)
+      successResponse(
+        res,
+        {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          avatar: user.avatar
+          // Add any other fields you want to return
+        },
+        'User fetched successfully',
+        200
+      )
+    })
+    .catch((err) => errorResponse(res, 'Error fetching user', 500))
+})
+
+// @route   POST api/users/profile
+// @desc    Update user profile
+// @access  Private
+router.post('/profile', authenticateToken, (req, res) => {
+  const { name, email, avatar } = req.body
+
+  // Validate input
+  if (!name && !email) {
+    return errorResponse(res, 'Please provide name or email to update', 400)
+  }
+
+  const updateFields = {}
+  if (name) updateFields.name = name
+  if (email) updateFields.email = email
+  if (avatar) updateFields.avatar = avatar
+
+  User.findById(req.user.id)
+    .then((user) => {
+      if (!user) return errorResponse(res, 'User not found', 404)
+
+      User.findByIdAndUpdate(req.user.id, { $set: updateFields }, { new: true })
+        .then((updatedUser) =>
+          successResponse(
+            res,
+            {
+              id: updatedUser.id,
+              name: updatedUser.name,
+              email: updatedUser.email,
+              avatar: updatedUser.avatar
+            },
+            '修改成功',
+            200
+          )
+        )
+        .catch((err) => errorResponse(res, 'Error updating profile', 500))
+    })
+    .catch((err) => errorResponse(res, 'Error finding user', 500))
 })
 
 module.exports = router
