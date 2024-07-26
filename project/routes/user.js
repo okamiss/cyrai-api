@@ -130,7 +130,7 @@ router.post('/login', (req, res) => {
             const payload = { id: user.id, name: user.name }
 
             // Sign token
-            jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: 3600 }, (err, token) => {
+            jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: 36000 }, (err, token) => {
               if (err) return errorResponse(res, 'Error signing token', 500)
               successResponse(
                 res,
@@ -156,11 +156,13 @@ router.post('/login', (req, res) => {
 // @desc    Return current user
 // @access  Private
 router.get('/current', authenticateToken, (req, res) => {
+  // console.log(req.user);
   successResponse(
     res,
     {
       id: req.user.id,
       name: req.user.name,
+      email: req.user.email
     },
     'User data retrieved successfully',
     200
