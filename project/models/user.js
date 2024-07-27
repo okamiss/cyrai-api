@@ -3,9 +3,8 @@ const Schema = mongoose.Schema
 
 // Create schema
 const UserSchema = new Schema({
-  username: {
+  name: {
     type: String,
-    unique: true,
     required: true
   },
   password: {
@@ -14,14 +13,17 @@ const UserSchema = new Schema({
   },
   email: {
     type: String,
-    unique: true,
     required: true
   },
+  avatar: String,
   date: {
     type: Date,
     default: Date.now
   }
 })
 
-module.exports = mongoose.model('User', UserSchema)
+// 在 Schema 中统一定义多个索引
+UserSchema.index({ email: 1 }, { unique: true })
+// UserSchema.index({ age: 1, name: -1 });
 
+module.exports = mongoose.model('User', UserSchema)
