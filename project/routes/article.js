@@ -6,11 +6,12 @@ const authenticateToken = require('@/middleware/authenticateToken')
 const Article = require('@/models/article')
 const User = require('@/models/user')
 
-// @route   POST api/articles
+// @route   POST api/articles/add
 // @desc    Create a new article
 // @access  Private
 router.post('/add', authenticateToken, (req, res) => {
-  const { title, content } = req.body
+  const { title, content, fields } = req.body
+
 
   User.findById(req.user.id)
     .then((user) => {
@@ -21,6 +22,7 @@ router.post('/add', authenticateToken, (req, res) => {
       const newArticle = new Article({
         title,
         content,
+        fields,
         author: {
           id: req.user.id,
           name: user.name

@@ -1,58 +1,71 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+const mongoose = require('mongoose')
+const Schema = mongoose.Schema
 
 const ArticleSchema = new Schema({
-    title: {
-        type: String,
-        required: true
+  title: {
+    type: String,
+    required: true
+  },
+  content: {
+    type: String,
+    required: true
+  },
+  fields: [
+    {
+      createdAt: String,
+      filename: String,
+      mimetype: String,
+      originalname: String,
+      path: String
+    }
+  ],
+  author: {
+    id: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
     },
-    content: {
-        type: String,
-        required: true
-    },
-    author: {
+    name: {
+      type: String,
+      required: true
+    }
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  likes: [
+    {
+      id: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+      },
+      name: {
+        type: String
+      }
+    }
+  ],
+  comments: [
+    {
+      user: {
         id: {
-            type: Schema.Types.ObjectId,
-            ref: 'User',
-            required: true
+          type: Schema.Types.ObjectId,
+          ref: 'User'
         },
         name: {
-            type: String,
-            required: true
+          type: String
         }
-    },
-    createdAt: {
+      },
+      comment: {
+        type: String,
+        required: true
+      },
+      createdAt: {
         type: Date,
         default: Date.now
-    },
-    likes: [{
-        id: {
-            type: Schema.Types.ObjectId,
-            ref: 'User'
-        },
-        name: {
-            type: String
-        }
-    }],
-    comments: [{
-        user: {
-            id: {
-                type: Schema.Types.ObjectId,
-                ref: 'User'
-            },
-            name: {
-                type: String
-            }
-        },
-        comment: {
-            type: String,
-            required: true
-        },
-        createdAt: {
-            type: Date,
-            default: Date.now
-        }
-    }]
-});
+      }
+    }
+  ]
+})
 
-module.exports = mongoose.model('Article', ArticleSchema);
+module.exports = mongoose.model('Article', ArticleSchema)
