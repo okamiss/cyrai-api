@@ -21,7 +21,7 @@ dotenv.config({ path: envFile })
 app.use(bodyParser.json())
 app.use(cors())
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))  //文件上传保持路径
-app.use(express.static(path.join(__dirname, '../uploads')));  //设置静态资源目录
+app.use(express.static(path.join(__dirname, '/uploads')));  //设置静态资源目录
 
 
 // Connect to MongoDB

@@ -14,7 +14,7 @@ User.on('index', (error) => {
   if (error) {
     console.error('User索引创建错误: ', error)
   } else {
-    console.log('所有User索引创建成功')
+    // console.log('所有User索引创建成功')
   }
 })
 
@@ -130,7 +130,7 @@ router.post('/login', (req, res) => {
             const payload = { id: user.id, name: user.name }
 
             // Sign token
-            jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: 10 }, (err, token) => {
+            jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: 36000 }, (err, token) => {
               if (err) return errorResponse(res, 'Error signing token', 500)
               successResponse(
                 res,
