@@ -12,29 +12,30 @@ const User = require('@/models/user')
 router.post('/add', authenticateToken, (req, res) => {
   const { title, content, fields } = req.body
 
-
   User.findById(req.user.id)
     .then((user) => {
       if (!user) {
-        return errorResponse(res, 'User not found', 404)
+        return errorResponse(res, '用户未找到', 404)
       }
-
+      console.log(user, ' req.user')
       const newArticle = new Article({
         title,
         content,
         fields,
         author: {
           id: req.user.id,
-          name: user.name
-        }
+          name: user.name,
+          avatar: user.avatar
+        },
+        otalViews: 0
       })
 
       newArticle
         .save()
-        .then((article) => successResponse(res, article, 'Article created successfully', 200))
-        .catch((err) => errorResponse(res, 'Error creating article', 500))
+        .then((article) => successResponse(res, article, '发布成功', 200))
+        .catch((err) => errorResponse(res, '发布失败', 500))
     })
-    .catch((err) => errorResponse(res, 'Error finding user', 500))
+    .catch((err) => errorResponse(res, '未找到用户', 500))
 })
 
 // @route   GET api/articles
@@ -60,13 +61,13 @@ router.get('/', (req, res) => {
               page,
               pages: Math.ceil(total / limit)
             },
-            'Articles retrieved successfully',
+            '获取成功',
             200
           )
         })
-        .catch((err) => errorResponse(res, 'Error counting articles', 500))
+        .catch((err) => errorResponse(res, '获取列表失败', 500))
     })
-    .catch((err) => errorResponse(res, 'Error retrieving articles', 500))
+    .catch((err) => errorResponse(res, '检索帖子出错', 500))
 })
 
 // @route   GET api/articles/:id
@@ -76,9 +77,18 @@ router.get('/:id', (req, res) => {
   Article.findById(req.params.id)
     .then((article) => {
       if (!article) {
-        return errorResponse(res, 'Article not found', 404)
+        return errorResponse(res, '帖子未找到', 404)
       }
-      successResponse(res, article, 'Article retrieved successfully', 200)
+      article.totalViews += 1
+
+      article
+        .save()
+        .then((updatedArticle) =>
+          successResponse(res, updatedArticle, '文章成功获取', 200)
+        )
+        .catch((err) => errorResponse(res, 'Error updating views', 500))
+
+      // successResponse(res, article, 'Article retrieved successfully', 200)
     })
     .catch((err) => errorResponse(res, 'Error retrieving article', 500))
 })
@@ -90,20 +100,20 @@ router.post('/:id/like', authenticateToken, (req, res) => {
   Article.findById(req.params.id)
     .then((article) => {
       if (!article) {
-        return errorResponse(res, 'Article not found', 404)
+        return errorResponse(res, '帖子未找到', 404)
       }
 
       User.findById(req.user.id)
         .then((user) => {
           if (!user) {
-            return errorResponse(res, 'User not found', 404)
+            return errorResponse(res, '用户未找到', 404)
           }
 
           if (article.likes.some((like) => like.id.toString() === req.user.id)) {
             return errorResponse(res, '已经点赞过了', 200)
           }
 
-          article.likes.push({ id: req.user.id, name: user.name })
+          article.likes.push({ id: req.user.id, name: user.name, avatar: user.avatar })
           article
             .save()
             .then(() => successResponse(res, article, '点赞成功', 200))
@@ -123,18 +133,19 @@ router.post('/:id/comment', authenticateToken, (req, res) => {
   Article.findById(req.params.id)
     .then((article) => {
       if (!article) {
-        return errorResponse(res, 'Article not found', 404)
+        return errorResponse(res, '帖子未找到', 404)
       }
 
       User.findById(req.user.id)
         .then((user) => {
           if (!user) {
-            return errorResponse(res, 'User not found', 404)
+            return errorResponse(res, '用户未找到', 404)
           }
           article.comments.push({
             user: {
               id: req.user.id,
-              name: user.name
+              name: user.name,
+              avatar: user.avatar
             },
             comment
           })

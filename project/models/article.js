@@ -12,7 +12,6 @@ const ArticleSchema = new Schema({
   },
   fields: [
     {
-      createdAt: String,
       filename: String,
       mimetype: String,
       originalname: String,
@@ -28,6 +27,9 @@ const ArticleSchema = new Schema({
     name: {
       type: String,
       required: true
+    },
+    avatar: {
+      type: String
     }
   },
   createdAt: {
@@ -42,6 +44,9 @@ const ArticleSchema = new Schema({
       },
       name: {
         type: String
+      },
+      avatar: {
+        type: String
       }
     }
   ],
@@ -54,6 +59,9 @@ const ArticleSchema = new Schema({
         },
         name: {
           type: String
+        },
+        avatar: {
+          type: String
         }
       },
       comment: {
@@ -65,7 +73,11 @@ const ArticleSchema = new Schema({
         default: Date.now
       }
     }
-  ]
+  ],
+  totalViews: {
+    type: Number,
+    default: 0
+  }
 })
 
 module.exports = mongoose.model('Article', ArticleSchema)
