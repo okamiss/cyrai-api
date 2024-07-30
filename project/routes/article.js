@@ -17,7 +17,7 @@ router.post('/add', authenticateToken, (req, res) => {
       if (!user) {
         return errorResponse(res, '用户未找到', 404)
       }
-      console.log(user, ' req.user')
+      // console.log(user, ' req.user')
       const newArticle = new Article({
         title,
         content,
