@@ -22,7 +22,7 @@ router.post('/', authenticateToken, (req, res) => {
     const fileInfos = req.files.map((file) => ({
       filename: file.filename,
       originalname: file.originalname,
-      path: file.path,
+      path: `${process.env.SERVICE_IP}/${file.path.replace(/\\/g, '/')}`,
       mimetype: file.mimetype,
       size: file.size
     }))
