@@ -18,15 +18,15 @@ router.post('/add', authenticateToken, (req, res) => {
       if (!user) {
         return errorResponse(res, '用户未找到', 404)
       }
-      // console.log(user, ' req.user')
+
       const newArticle = new Article({
         title,
         content,
         fields,
         author: {
           id: req.user.id,
-          name: user.name,
-          avatar: user.avatar
+          name: req.user.name,
+          avatar: req.user.avatar
         },
         otalViews: 0
       })
@@ -112,7 +112,7 @@ router.post('/:id/like', authenticateToken, (req, res) => {
             return errorResponse(res, '已经点赞过了', 200)
           }
 
-          article.likes.push({ id: req.user.id, name: user.name, avatar: user.avatar })
+          article.likes.push({ id: req.user.id, name: req.user.name, avatar: req.user.avatar })
           article
             .save()
             .then(() => successResponse(res, article, '点赞成功', 200))
@@ -147,9 +147,9 @@ router.post('/:id/comments', authenticateToken, (req, res) => {
 
           const newComment = new Comment({
             user: {
-              id: user.id,
-              name: user.name,
-              avatar: user.avatar
+              id: req.user.id,
+              name: req.user.name,
+              avatar: req.user.avatar
             },
             text
           })
