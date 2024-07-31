@@ -4,6 +4,7 @@ const { successResponse, errorResponse } = require('@/utils/responseHandler')
 const authenticateToken = require('@/middleware/authenticateToken')
 
 const Article = require('@/models/article')
+const Comment = require('@/models/comment')
 const User = require('@/models/user')
 
 // @route   POST api/articles/add
@@ -83,9 +84,7 @@ router.get('/:id', (req, res) => {
 
       article
         .save()
-        .then((updatedArticle) =>
-          successResponse(res, updatedArticle, '文章成功获取', 200)
-        )
+        .then((updatedArticle) => successResponse(res, updatedArticle, '文章成功获取', 200))
         .catch((err) => errorResponse(res, 'Error updating views', 500))
 
       // successResponse(res, article, 'Article retrieved successfully', 200)
@@ -124,11 +123,15 @@ router.post('/:id/like', authenticateToken, (req, res) => {
     .catch((err) => errorResponse(res, 'Error finding article', 500))
 })
 
-// @route   POST api/articles/:id/comment
+// @route   POST api/articles/:id/comments
 // @desc    Comment on an article
 // @access  Private
-router.post('/:id/comment', authenticateToken, (req, res) => {
-  const { comment } = req.body
+router.post('/:id/comments', authenticateToken, (req, res) => {
+  const { text } = req.body
+
+  if (!text) {
+    return errorResponse(res, '评论内容不可为空', 400)
+  }
 
   Article.findById(req.params.id)
     .then((article) => {
@@ -141,23 +144,123 @@ router.post('/:id/comment', authenticateToken, (req, res) => {
           if (!user) {
             return errorResponse(res, '用户未找到', 404)
           }
-          article.comments.push({
+
+          const newComment = new Comment({
             user: {
-              id: req.user.id,
+              id: user.id,
               name: user.name,
               avatar: user.avatar
             },
-            comment
+            text
           })
 
-          article
+          // article.comments.push(newComment)
+
+          newComment
             .save()
-            .then(() => successResponse(res, article, 'Comment added successfully', 200))
-            .catch((err) => errorResponse(res, 'Error adding comment', 500))
+            .then((comment) => {
+              article.comments.push(comment._id)
+              article
+                .save()
+                .then(() => successResponse(res, comment, 'Comment added successfully', 200))
+                .catch((err) => errorResponse(res, 'Error saving article with new comment', 500))
+            })
+            .catch((err) => errorResponse(res, 'Error saving comment', 500))
+
+          // article
+          //   .save()
+          //   .then(() => successResponse(res, article, '评论成功', 200))
+          //   .catch((err) => errorResponse(res, '评论失败', 500))
         })
-        .catch((err) => errorResponse(res, 'Error finding user', 500))
+        .catch((err) => errorResponse(res, '未找到评论用户', 500))
     })
-    .catch((err) => errorResponse(res, 'Error finding article', 500))
+    .catch((err) => errorResponse(res, '查找帖子出错', 500))
+})
+
+// 引用回复
+// Add a reply to a comment
+router.post('/:id/comments/:commentId/replies', authenticateToken, (req, res) => {
+  const { text } = req.body
+
+  if (!text) {
+    return errorResponse(res, 'Please provide reply text', 400)
+  }
+
+  Comment.findById(req.params.commentId)
+    .then((comment) => {
+      if (!comment) return errorResponse(res, 'Comment not found', 404)
+
+      const newReply = new Comment({
+        user: {
+          id: req.user.id,
+          name: req.user.name,
+          avatar: req.user.avatar
+        },
+        text
+      })
+
+      newReply
+        .save()
+        .then((reply) => {
+          comment.replies.push(reply._id)
+          comment
+            .save()
+            .then((updatedComment) => successResponse(res, reply, 'Reply added successfully', 200))
+            .catch((err) => errorResponse(res, 'Error saving comment with new reply', 500))
+        })
+        .catch((err) => errorResponse(res, 'Error saving reply', 500))
+    })
+    .catch((err) => errorResponse(res, 'Error fetching comment', 500))
+})
+
+// 点赞评论
+// Like a comment
+router.post('/comments/:commentId/like', authenticateToken, (req, res) => {
+  Comment.findById(req.params.commentId)
+    .then((comment) => {
+      if (!comment) return errorResponse(res, 'Comment not found', 404)
+
+      comment.likes += 1
+
+      comment
+        .save()
+        .then((updatedComment) =>
+          successResponse(res, updatedComment, 'Comment liked successfully', 200)
+        )
+        .catch((err) => errorResponse(res, 'Error liking comment', 500))
+    })
+    .catch((err) => errorResponse(res, 'Error fetching comment', 500))
+})
+
+// 获取评论和懒加载
+// Get comments for an article with pagination
+router.get('/:id/comments', authenticateToken, (req, res) => {
+  const { page = 1, limit = 10 } = req.query
+
+  Article.findById(req.params.id)
+    .populate({
+      path: 'comments',
+      populate: {
+        path: 'replies',
+        model: 'Comment',
+        populate: {
+          path: 'replies',
+          model: 'Comment',
+          populate: {
+            path: 'replies',
+            model: 'Comment'
+          }
+        }
+      }
+    })
+    .then((article) => {
+      if (!article) return errorResponse(res, 'Article not found', 404)
+
+      const comments = article.comments.slice((page - 1) * limit, page * limit)
+
+      successResponse(res, comments, 'Comments fetched successfully', 200)
+    })
+    .catch((err) => errorResponse(res, 'Error fetching article', 500))
 })
 
 module.exports = router

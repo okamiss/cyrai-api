@@ -52,28 +52,34 @@ const ArticleSchema = new Schema({
   ],
   comments: [
     {
-      user: {
-        id: {
-          type: Schema.Types.ObjectId,
-          ref: 'User'
-        },
-        name: {
-          type: String
-        },
-        avatar: {
-          type: String
-        }
-      },
-      comment: {
-        type: String,
-        required: true
-      },
-      createdAt: {
-        type: Date,
-        default: Date.now
-      }
+      type: Schema.Types.ObjectId,
+      ref: 'Comment'
     }
   ],
+  // comments: [
+  //   {
+  //     user: {
+  //       id: {
+  //         type: Schema.Types.ObjectId,
+  //         ref: 'User'
+  //       },
+  //       name: {
+  //         type: String
+  //       },
+  //       avatar: {
+  //         type: String
+  //       }
+  //     },
+  //     comment: {
+  //       type: String,
+  //       required: true
+  //     },
+  //     createdAt: {
+  //       type: Date,
+  //       default: Date.now
+  //     }
+  //   }
+  // ],
   totalViews: {
     type: Number,
     default: 0
