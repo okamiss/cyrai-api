@@ -120,7 +120,6 @@ router.post('/login', (req, res) => {
       if (!user) {
         return errorResponse(res, 'User not found', 404)
       }
-
       // Check password
       bcrypt
         .compare(password, user.password)
@@ -135,6 +134,7 @@ router.post('/login', (req, res) => {
               successResponse(
                 res,
                 {
+                  userId: user._id,
                   name: user.name,
                   email: user.email,
                   avatar: user.avatar,
