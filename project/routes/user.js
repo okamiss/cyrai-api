@@ -129,7 +129,7 @@ router.post('/login', (req, res) => {
             const payload = { id: user.id, name: user.name, email: user.email, avatar: user.avatar }
 
             // Sign token
-            jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: 36000 }, (err, token) => {
+            jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' }, (err, token) => {
               if (err) return errorResponse(res, 'Error signing token', 500)
               successResponse(
                 res,
