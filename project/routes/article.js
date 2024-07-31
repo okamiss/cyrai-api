@@ -232,7 +232,7 @@ router.post('/comments/:commentId/like', authenticateToken, (req, res) => {
     .catch((err) => errorResponse(res, 'Error fetching comment', 500))
 })
 
-// 获取评论和懒加载
+// 获取外层评论和懒加载
 // Get comments for an article with pagination
 router.get('/:id/comments', authenticateToken, (req, res) => {
   const { page = 1, limit = 10 } = req.query
@@ -240,27 +240,54 @@ router.get('/:id/comments', authenticateToken, (req, res) => {
   Article.findById(req.params.id)
     .populate({
       path: 'comments',
+      options: {
+        skip: (page - 1) * limit,
+        limit: parseInt(limit)
+      },
       populate: {
         path: 'replies',
-        model: 'Comment',
-        populate: {
-          path: 'replies',
-          model: 'Comment',
-          populate: {
-            path: 'replies',
-            model: 'Comment'
-          }
-        }
+        model: 'Comment'
       }
     })
     .then((article) => {
       if (!article) return errorResponse(res, 'Article not found', 404)
 
-      const comments = article.comments.slice((page - 1) * limit, page * limit)
-
+      const comments = article.comments
       successResponse(res, comments, 'Comments fetched successfully', 200)
     })
     .catch((err) => errorResponse(res, 'Error fetching article', 500))
+})
+
+// Helper function to recursively populate comments with pagination
+const populateCommentsWithPagination = (commentId, page, limit) => {
+  return Comment.findById(commentId)
+    .populate({
+      path: 'replies',
+      options: {
+        skip: (page - 1) * limit,
+        limit: parseInt(limit)
+      },
+      populate: {
+        path: 'replies',
+        model: 'Comment'
+      }
+    })
+    .exec()
+}
+
+// 内层懒加载
+// Get replies for a comment with pagination
+router.get('/comments/:commentId/replies', authenticateToken, (req, res) => {
+  const { page = 1, limit = 10 } = req.query
+
+  populateCommentsWithPagination(req.params.commentId, page, limit)
+    .then((comment) => {
+      if (!comment) return errorResponse(res, 'Comment not found', 404)
+
+      const replies = comment.replies
+      successResponse(res, replies, 'Replies fetched successfully', 200)
+    })
+    .catch((err) => errorResponse(res, 'Error fetching replies', 500))
 })
 
 module.exports = router
