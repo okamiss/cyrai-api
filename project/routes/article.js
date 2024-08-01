@@ -25,8 +25,8 @@ router.post('/add', authenticateToken, (req, res) => {
         fields,
         author: {
           id: req.user.id,
-          name: req.user.name,
-          avatar: req.user.avatar
+          name: user.name,
+          avatar: user.avatar
         },
         otalViews: 0
       })
@@ -36,7 +36,7 @@ router.post('/add', authenticateToken, (req, res) => {
         .then((article) => successResponse(res, article, '发布成功', 200))
         .catch((err) => errorResponse(res, '发布失败', 500))
     })
-    .catch((err) => errorResponse(res, '未找到用户', 500))
+    .catch((err) => errorResponse(res, '查找用户失败', 500))
 })
 
 // @route   GET api/articles
@@ -112,13 +112,18 @@ router.post('/:id/like', authenticateToken, (req, res) => {
             return errorResponse(res, '已经点赞过了', 200)
           }
 
-          article.likes.push({ id: req.user.id, name: req.user.name, avatar: req.user.avatar })
+          article.likes.push({
+            id: req.user.id,
+            name: user.name,
+            avatar: user.avatar
+          })
+
           article
             .save()
             .then(() => successResponse(res, article, '点赞成功', 200))
             .catch((err) => errorResponse(res, 'Error liking article', 500))
         })
-        .catch((err) => errorResponse(res, 'Error finding user', 500))
+        .catch((err) => errorResponse(res, '查找用户失败', 500))
     })
     .catch((err) => errorResponse(res, 'Error finding article', 500))
 })
@@ -148,8 +153,8 @@ router.post('/:id/comments', authenticateToken, (req, res) => {
           const newComment = new Comment({
             user: {
               id: req.user.id,
-              name: req.user.name,
-              avatar: req.user.avatar
+              name: user.name,
+              avatar: user.avatar
             },
             text
           })
@@ -172,7 +177,7 @@ router.post('/:id/comments', authenticateToken, (req, res) => {
           //   .then(() => successResponse(res, article, '评论成功', 200))
           //   .catch((err) => errorResponse(res, '评论失败', 500))
         })
-        .catch((err) => errorResponse(res, '未找到评论用户', 500))
+        .catch((err) => errorResponse(res, '查找用户失败', 500))
     })
     .catch((err) => errorResponse(res, '查找帖子出错', 500))
 })
@@ -189,26 +194,35 @@ router.post('/:id/comments/:commentId/replies', authenticateToken, (req, res) =>
   Comment.findById(req.params.commentId)
     .then((comment) => {
       if (!comment) return errorResponse(res, 'Comment not found', 404)
+      User.findById(req.user.id)
+        .then((user) => {
+          if (!user) {
+            return errorResponse(res, '用户未找到', 404)
+          }
 
-      const newReply = new Comment({
-        user: {
-          id: req.user.id,
-          name: req.user.name,
-          avatar: req.user.avatar
-        },
-        text
-      })
+          const newReply = new Comment({
+            user: {
+              id: req.user.id,
+              name: user.name,
+              avatar: user.avatar
+            },
+            text
+          })
 
-      newReply
-        .save()
-        .then((reply) => {
-          comment.replies.push(reply._id)
-          comment
+          newReply
             .save()
-            .then((updatedComment) => successResponse(res, reply, 'Reply added successfully', 200))
-            .catch((err) => errorResponse(res, 'Error saving comment with new reply', 500))
+            .then((reply) => {
+              comment.replies.push(reply._id)
+              comment
+                .save()
+                .then((updatedComment) =>
+                  successResponse(res, reply, 'Reply added successfully', 200)
+                )
+                .catch((err) => errorResponse(res, 'Error saving comment with new reply', 500))
+            })
+            .catch((err) => errorResponse(res, 'Error saving reply', 500))
         })
-        .catch((err) => errorResponse(res, 'Error saving reply', 500))
+        .catch((err) => errorResponse(res, '查找用户失败', 500))
     })
     .catch((err) => errorResponse(res, 'Error fetching comment', 500))
 })

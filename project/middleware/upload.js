@@ -9,20 +9,21 @@ const storage = multer.diskStorage({
     const now = new Date()
     const year = now.getFullYear()
     const month = String(now.getMonth() + 1).padStart(2, '0') // 获取月份，并补0
+    const day = ('0' + now.getDate()).slice(-2)
 
-    // 生成文件夹名称
-    const folderName = `${year}${month}`
-    const uploadFolderPath = path.join(path.resolve(), 'uploads')
-    const folderPath = path.join(uploadFolderPath, folderName)
+    // 构建目录路径
+    const directoryPath = path.join(path.resolve(), 'uploads', year.toString(), month, day)
+    const setPath = path.join('uploads', year.toString(), month, day)
 
-    // 检查文件夹是否存在
-    if (!fs.existsSync(folderPath)) {
-      // 创建文件夹
-      fs.mkdirSync(folderPath)
-      // console.log(`文件夹 ${folderName} 创建成功`)
-    }
-
-    cb(null, `uploads/${folderName}`)
+    // 检查目录是否存在，如果不存在则创建
+    fs.mkdir(directoryPath, { recursive: true }, (err) => {
+      if (err) {
+        return console.error(`Failed to create directory: ${err.message}`)
+      }
+      // console.log(`Directory created successfully: ${directoryPath}`)
+      cb(null, setPath)
+    })
+    // cb(null, `uploads/${folderName}`)
   },
   filename: function (req, file, cb) {
     cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
