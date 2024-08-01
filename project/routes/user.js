@@ -165,7 +165,7 @@ router.get('/current', authenticateToken, (req, res) => {
       successResponse(
         res,
         {
-          id: user.id,
+          userId: user.id,
           name: user.name,
           email: user.email,
           avatar: user.avatar
@@ -203,7 +203,7 @@ router.post('/profile', authenticateToken, (req, res) => {
           successResponse(
             res,
             {
-              id: updatedUser.id,
+              userId: updatedUser.id,
               name: updatedUser.name,
               email: updatedUser.email,
               avatar: updatedUser.avatar
