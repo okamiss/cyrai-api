@@ -254,10 +254,10 @@ router.get('/:id/comments', authenticateToken, (req, res) => {
   Article.findById(req.params.id)
     .populate({
       path: 'comments',
-      options: {
-        skip: (page - 1) * limit,
-        limit: parseInt(limit)
-      },
+      // options: {
+      //   skip: (page - 1) * limit,
+      //   limit: parseInt(limit)
+      // },
       populate: {
         path: 'replies',
         model: 'Comment'
@@ -277,10 +277,10 @@ const populateCommentsWithPagination = (commentId, page, limit) => {
   return Comment.findById(commentId)
     .populate({
       path: 'replies',
-      options: {
-        skip: (page - 1) * limit,
-        limit: parseInt(limit)
-      },
+      // options: {
+      //   skip: (page - 1) * limit,
+      //   limit: parseInt(limit)
+      // },
       populate: {
         path: 'replies',
         model: 'Comment'
