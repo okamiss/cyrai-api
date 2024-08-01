@@ -18,7 +18,7 @@ const CommentSchema = new Schema({
   },
   isLeaf: {
     type: Boolean,
-    default: true
+    default: false
   },
   text: {
     type: String,
@@ -41,9 +41,9 @@ const CommentSchema = new Schema({
 })
 
 // 使用 pre save 钩子在保存文档之前检查replies的长度并设置isLeaf的值
-CommentSchema.pre('save', function (next) {
-  this.isLeaf = !this.replies.length
-  next()
-})
+// CommentSchema.pre('save', function (next) {
+//   this.isLeaf = !this.replies.length
+//   next()
+// })
 
 module.exports = mongoose.model('Comment', CommentSchema)
