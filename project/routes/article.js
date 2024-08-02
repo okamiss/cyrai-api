@@ -258,10 +258,10 @@ router.get('/:id/comments', authenticateToken, (req, res) => {
       //   skip: (page - 1) * limit,
       //   limit: parseInt(limit)
       // },
-      populate: {
-        path: 'replies',
-        model: 'Comment'
-      }
+      // populate: {
+      //   path: 'replies',
+      //   model: 'Comment'
+      // }
     })
     .then((article) => {
       if (!article) return errorResponse(res, 'Article not found', 404)
@@ -281,10 +281,10 @@ const populateCommentsWithPagination = (commentId, page, limit) => {
       //   skip: (page - 1) * limit,
       //   limit: parseInt(limit)
       // },
-      populate: {
-        path: 'replies',
-        model: 'Comment'
-      }
+      // populate: {
+      //   path: 'replies',
+      //   model: 'Comment'
+      // }
     })
     .exec()
 }
