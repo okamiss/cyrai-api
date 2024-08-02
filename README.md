@@ -1,4 +1,4 @@
-# cyrai-api
+# cyr-api
 
 ------
 

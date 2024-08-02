@@ -248,12 +248,12 @@ router.post('/comments/:commentId/like', authenticateToken, (req, res) => {
 
 // 获取外层评论和懒加载
 // Get comments for an article with pagination
-router.get('/:id/comments', authenticateToken, (req, res) => {
+router.get('/:id/comments', (req, res) => {
   const { page = 1, limit = 10 } = req.query
 
   Article.findById(req.params.id)
     .populate({
-      path: 'comments',
+      path: 'comments'
       // options: {
       //   skip: (page - 1) * limit,
       //   limit: parseInt(limit)
@@ -276,7 +276,7 @@ router.get('/:id/comments', authenticateToken, (req, res) => {
 const populateCommentsWithPagination = (commentId, page, limit) => {
   return Comment.findById(commentId)
     .populate({
-      path: 'replies',
+      path: 'replies'
       // options: {
       //   skip: (page - 1) * limit,
       //   limit: parseInt(limit)
@@ -291,7 +291,7 @@ const populateCommentsWithPagination = (commentId, page, limit) => {
 
 // 内层懒加载
 // Get replies for a comment with pagination
-router.get('/comments/:commentId/replies', authenticateToken, (req, res) => {
+router.get('/comments/:commentId/replies', (req, res) => {
   const { page = 1, limit = 10 } = req.query
 
   populateCommentsWithPagination(req.params.commentId, page, limit)
